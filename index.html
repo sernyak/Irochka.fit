@@ -1,1 +1,613 @@
-<!DOCTYPE html><html lang="ru"><head>    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    <title>С Днем Рождения, Ирочка!</title>        <!-- Tailwind CSS -->    <script src="https://cdn.tailwindcss.com"></script>        <!-- React & ReactDOM -->    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>        <!-- Babel for JSX -->    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>    <!-- Fonts -->    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">    <style>        body {            font-family: 'Inter', sans-serif;            -webkit-tap-highlight-color: transparent;        }                /* Custom Animations */        @keyframes fall {            0% { transform: translateY(0) rotate(0deg); opacity: 1; }            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }        }        .animate-fall {            animation-name: fall;            animation-timing-function: linear;        }        .animate-bounce-slow {            animation: bounce 3s infinite;        }        @keyframes bounce {            0%, 100% { transform: translateY(-5%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }            50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }        }        .animate-fade-in {            animation: fadeIn 0.5s ease-out forwards;        }        .animate-fade-in-up {            animation: fadeInUp 0.8s ease-out forwards;        }        .animate-bounce-in {            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);        }        @keyframes fadeIn {            from { opacity: 0; }            to { opacity: 1; }        }        @keyframes fadeInUp {            from { opacity: 0; transform: translateY(20px); }            to { opacity: 1; transform: translateY(0); }        }        @keyframes bounceIn {            0% { transform: scale(0.3); opacity: 0; }            50% { transform: scale(1.05); opacity: 1; }            70% { transform: scale(0.9); }            100% { transform: scale(1); opacity: 1; }        }        /* Loader Animation */        .loader-dots span {            animation-name: loader-dots;            animation-duration: 1.4s;            animation-iteration-count: infinite;            animation-fill-mode: both;        }        .loader-dots span:nth-child(2) { animation-delay: 0.2s; }        .loader-dots span:nth-child(3) { animation-delay: 0.4s; }        @keyframes loader-dots {            0% { opacity: 0.2; }            20% { opacity: 1; }            100% { opacity: 0.2; }        }    </style></head><body class="bg-gray-50">    <div id="root"></div>    <script type="text/babel">        const { useState, useEffect } = React;        // --- ICONS COMPONENTS (SVG) ---        const Icon = ({ children, className, ...props }) => (            <svg                 xmlns="http://www.w3.org/2000/svg"                 width="24"                 height="24"                 viewBox="0 0 24 24"                 fill="none"                 stroke="currentColor"                 strokeWidth="2"                 strokeLinecap="round"                 strokeLinejoin="round"                 className={className}                {...props}            >                {children}            </svg>        );        const Heart = (p) => <Icon {...p}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></Icon>;        const Gift = (p) => <Icon {...p}><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.9 4.9 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></Icon>;        const Volume2 = (p) => <Icon {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></Icon>;        const VolumeX = (p) => <Icon {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></Icon>;        const Camera = (p) => <Icon {...p}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></Icon>;        const Sparkles = (p) => <Icon {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 5H5"/><path d="M19 21v-4"/><path d="M15 19h4"/></Icon>;        const Music = (p) => <Icon {...p}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></Icon>;        const Shield = (p) => <Icon {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></Icon>;        const ArrowRight = (p) => <Icon {...p}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></Icon>;        const Banknote = (p) => <Icon {...p}><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></Icon>;        const Wallet = (p) => <Icon {...p}><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></Icon>;        const CheckCircle = (p) => <Icon {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Icon>;        const CreditCard = (p) => <Icon {...p}><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></Icon>;        // --- MAIN APP COMPONENT ---        const BirthdayApp = () => {            const [view, setView] = useState('greeting'); // 'greeting' or 'quiz'            const [isExploding, setIsExploding] = useState(false);            const [musicPlaying, setMusicPlaying] = useState(false);            const [confetti, setConfetti] = useState([]);            // Scroll to top when view changes            useEffect(() => {                window.scrollTo(0, 0);            }, [view]);            // Quiz States            const [quizStep, setQuizStep] = useState('step1');             const [selectedCategory, setSelectedCategory] = useState(null);             const [selectedCar, setSelectedCar] = useState(null);            const [giftClaimed, setGiftClaimed] = useState(false);             // Confetti Logic            const handleExplosion = () => {                setIsExploding(true);                const colors = ['#FFC0CB', '#FF69B4', '#FFD700', '#87CEEB', '#9370DB'];                const newConfetti = Array.from({ length: 70 }).map((_, i) => ({                    id: i,                    x: Math.random() * 100,                    y: -10,                    color: colors[Math.floor(Math.random() * colors.length)],                    delay: Math.random() * 2,                    rotation: Math.random() * 360,                    scale: Math.random() * 0.5 + 0.5                }));                setConfetti(newConfetti);                setTimeout(() => {                    setIsExploding(false);                    setConfetti([]);                }, 4000);            };            const memories = [                {                    title: "Красота и стиль",                    desc: "Ты красивая, стройная, спортивная! У тебя отличный вкус. Если на тебя смотрят — значит ты нравишься)",                    icon: <Camera className="w-6 h-6 md:w-8 md:h-8 text-pink-500" />,                    color: "bg-pink-100"                },                {                    title: "Профессионализм",                    desc: "Ты талантливая, ответственная, честная! Николаю повезло с таким личным ассистентом!",                    icon: <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-purple-500" />,                    color: "bg-purple-100"                },                {                    title: "Разносторонние таланты",                    desc: "Ты вкусно готовишь, хорошо водишь машину и весело поешь) Пусть счастья и радости будет больше!",                    icon: <Music className="w-6 h-6 md:w-8 md:h-8 text-yellow-500" />,                    color: "bg-yellow-100"                }            ];            // Car Data with LOCAL IMAGES            // IMPORTANT: Images should be in the root folder next to index.html            const cars = {                power: {                    name: "Dodge Ram 1500",                    title: "Мощь и Харизма",                    desc: "Американская мечта во плоти. Этот зверь создан для тех, кто не боится заявлять о себе. Мощный, огромный и невероятно комфортный — он идеально подчеркивает твою уверенность и статус.",                    img: "Dodge.jpg"                 },                reliability: {                    name: "Toyota Tundra",                    title: "Несокрушимая Сила",                    desc: "Легендарная надежность в сочетании с дикой мощью. Этот пикап — настоящая крепость на колесах. Идеальный выбор для тебя: стильный, проходимый и готовый к любым жизненным вызовам.",                    img: "toyota.jpg"                },                adventure: {                    name: "Ford Ranger Raptor",                    title: "Стильный Хищник",                    desc: "Дерзкий, спортивный и готовый ко всему. Он сочетает в себе городскую элегантность и дикий нрав. Как и ты, он умеет быть разным, но всегда остается лучшим в своем деле.",                    img: "ford.jpg"                }            };            // Quiz Handlers            const handleStep1 = (category) => {                setSelectedCategory(category);                setQuizStep('step2');            };            const handleStep2 = () => {                setSelectedCar(cars[selectedCategory]);                setQuizStep('modal');            };            const handleModalAction = () => {                setQuizStep('compliment');                setTimeout(() => {                    setQuizStep('result');                    handleExplosion();                 }, 2500);            };            const goToGift = () => {                setQuizStep('final_gift');                handleExplosion();            };            const handleClaimGift = () => {                handleExplosion();                setGiftClaimed(true);            };            const resetQuiz = () => {                setQuizStep('step1');                setSelectedCar(null);                setSelectedCategory(null);                setGiftClaimed(false);                setView('greeting');            };            return (                <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 font-sans overflow-x-hidden selection:bg-pink-200 pb-10">                                {/* Confetti Overlay */}                {isExploding && (                    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">                    {confetti.map((piece) => (                        <div                        key={piece.id}                        className="absolute w-3 h-3 rounded-sm animate-fall"                        style={{                            left: `${piece.x}%`,                            backgroundColor: piece.color,                            animationDuration: '3s',                            animationDelay: `${piece.delay}s`,                            transform: `rotate(${piece.rotation}deg) scale(${piece.scale})`                        }}                        />                    ))}                    </div>                )}                {/* Navigation */}                <nav className="fixed w-full top-0 z-40 bg-white/30 backdrop-blur-xl border-b border-white/20 supports-[backdrop-filter]:bg-white/30">                    <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">                    <span                         className="font-bold text-xl text-purple-800 tracking-tight cursor-pointer active:scale-95 transition-transform"                        onClick={() => setView('greeting')}                    >                        {view === 'greeting' ? 'HBD ✨' : '⬅ Назад'}                    </span>                    <button                         onClick={() => setMusicPlaying(!musicPlaying)}                        className="p-2 rounded-full bg-white/50 hover:bg-white active:scale-90 transition-all shadow-sm"                    >                        {musicPlaying ? <Volume2 className="w-6 h-6 text-purple-600" /> : <VolumeX className="w-6 h-6 text-gray-400" />}                    </button>                    </div>                </nav>                {/* MAIN GREETING VIEW */}                {view === 'greeting' && (                    <div className="animate-fade-in px-4 md:px-0">                    {/* Hero Section */}                    <header className="relative pt-32 pb-16 text-center max-w-4xl mx-auto">                        <div className="inline-block mb-4 px-4 py-1.5 rounded-full bg-white/60 backdrop-blur-sm text-purple-700 text-sm font-medium shadow-sm animate-bounce-slow">                        🎉 Сегодня твой день!                        </div>                                                <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-6 tracking-tight leading-[1.1]">                        С Днем Рождения, <br/>                        <span className="block text-gray-800 mt-2">Ирочка!</span>                         </h1>                        <div className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed space-y-4 px-2">                        <p className="font-semibold text-purple-700 text-lg">Ирисимос, привет)</p>                        <p>Еще раз с Днем рождения! Искренне желаю тебе счастья!</p>                        <p>                            Желаю чтобы следующий год твоей жизни был наполнен:                            радостью, легкостью, увереностью, самореализацией, деньгами, нужными людьми и поддерживающим окружением, интересными проектами, крутыми достижениями и новой машиной )                        </p>                        <p className="font-medium text-gray-700">Ты большая молодец!</p>                        <p>                            Не смотря на наши обстоятельства — я тобой горжусь и верю в тебя!                            Верю, что у тебя все будет наилучшим образом и искренне тебе этого желаю!                        </p>                        <p>Верю, что Мир заметит твои таланты и оценит их по достоинству!</p>                        <p className="font-bold text-gray-800 pt-2 text-xl">                            С Днем рождения тебя! Будь счастлива!                        </p>                        </div>                        <button                         onClick={handleExplosion}                        className="group relative inline-flex items-center justify-center w-full sm:w-auto px-10 py-4 font-bold text-white transition-all duration-200 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl shadow-lg active:scale-95 focus:outline-none ring-offset-2 focus:ring-2 ring-purple-400"                        >                        <Sparkles className="w-6 h-6 mr-2 animate-pulse" />                        <span className="text-lg">Нажать</span>                        </button>                    </header>                    {/* Photo / Cards Section */}                    <section className="max-w-4xl mx-auto py-8">                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">                        <div className="relative group overflow-hidden rounded-3xl bg-white shadow-xl h-80 md:h-96 transform transition-all active:scale-[0.98]">                            <div className="absolute inset-0 bg-gray-200 animate-pulse group-hover:animate-none flex items-center justify-center text-gray-400">                            {/* VIDEO REPLACEMENT */}                            <video                                 src="videohb.mp4"                                 autoPlay                                 loop                                 muted                                 playsInline                                 className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700"                            ></video>                            </div>                        </div>                        <div className="md:col-span-2 rounded-3xl bg-white/70 backdrop-blur-xl border border-white/50 p-6 md:p-8 shadow-xl flex flex-col justify-center relative overflow-hidden">                            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-purple-200 rounded-full blur-3xl opacity-50"></div>                            <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-32 h-32 bg-pink-200 rounded-full blur-3xl opacity-50"></div>                                                        <h3 className="text-2xl font-bold text-gray-800 mb-6 relative z-10">Почему ты особенная?</h3>                                                        <div className="space-y-4 relative z-10">                            {memories.map((item, index) => (                                <div                                 key={index}                                className="flex items-start p-3 rounded-xl hover:bg-white/50 transition-colors cursor-default group"                                >                                <div className={`p-3 rounded-xl ${item.color} mr-4 flex-shrink-0`}>                                    {item.icon}                                </div>                                <div>                                    <h4 className="font-bold text-gray-800 text-base mb-1">{item.title}</h4>                                    <p className="text-sm text-gray-600 leading-snug">{item.desc}</p>                                </div>                                </div>                            ))}                            </div>                        </div>                        </div>                    </section>                    {/* Wishes Grid */}                    <section className="max-w-4xl mx-auto py-8">                        <h2 className="text-center text-2xl md:text-3xl font-bold text-gray-800 mb-8">Пусть год будет наполнен:</h2>                        <div className="grid grid-cols-2 gap-3 sm:gap-4">                        {[                            { text: "Радостью", emoji: "✨", bg: "bg-yellow-50" },                            { text: "Деньгами", emoji: "💰", bg: "bg-green-50" },                            { text: "Новой машиной", emoji: "🚘", bg: "bg-red-50" },                            { text: "Крутыми проектами", emoji: "🚀", bg: "bg-indigo-50" },                            { text: "Легкостью", emoji: "🕊️", bg: "bg-blue-50" },                            { text: "Уверенностью", emoji: "🦁", bg: "bg-orange-50" },                            { text: "Самореализацией", emoji: "🌟", bg: "bg-purple-50" },                            { text: "Любовью", emoji: "❤️", bg: "bg-pink-50" }                        ].map((wish, idx) => (                            <div key={idx} className={`${wish.bg} rounded-2xl p-5 text-center active:scale-95 transition-transform cursor-pointer border border-white/50 shadow-sm`}>                            <div className="text-3xl sm:text-4xl mb-2">{wish.emoji}</div>                            <div className="font-semibold text-gray-700 text-sm sm:text-base">{wish.text}</div>                            </div>                        ))}                        </div>                    </section>                    {/* Gift Section */}                    <section className="py-16 text-center">                        <div className="max-w-md mx-auto bg-white rounded-[2rem] shadow-2xl p-8 relative overflow-hidden border-4 border-purple-100">                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-400 via-pink-500 to-purple-400"></div>                                                <Gift className="w-16 h-16 mx-auto text-purple-500 mb-4 animate-bounce" />                        <h3 className="text-2xl font-bold text-gray-800 mb-2">Виртуальный подарок</h3>                        <p className="text-gray-500 mb-8 leading-relaxed">Узнай, какой автомобиль идеально подходит твоему характеру!</p>                                                <button                             onClick={() => setView('quiz')}                            className="w-full py-4 px-6 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-lg flex items-center justify-center text-lg"                        >                            Получить подарок 🎁                        </button>                        </div>                    </section>                                        {/* Footer */}                    <footer className="text-center py-8 text-gray-400 text-xs sm:text-sm pb-12">                        <p>Сделано с любовью специально для тебя ❤️</p>                    </footer>                    </div>                )}                {/* QUIZ VIEW */}                {view === 'quiz' && (                    <div className="pt-28 pb-12 px-4 min-h-screen flex flex-col items-center justify-start sm:justify-center max-w-2xl mx-auto animate-fade-in">                                        {/* Step 1: Intro / Category Selection */}                    {quizStep === 'step1' && (                        <div className="text-center space-y-6 w-full">                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Вопрос 1 из 2 🧐</h2>                        <p className="text-gray-600 text-base sm:text-lg px-4">                            Что для тебя важнее всего в автомобиле?                        </p>                                                <div className="grid gap-3 w-full">                            <button                             onClick={() => handleStep1('power')}                            className="p-5 bg-white/80 backdrop-blur-xl border border-purple-200 rounded-2xl active:bg-purple-50 active:border-purple-400 transition-all shadow-sm font-bold text-purple-900 text-base sm:text-lg text-left flex items-center w-full"                            >                            <span className="text-2xl mr-4 shrink-0">💪</span>                            Характер, Мощь и Харизма                            </button>                            <button                             onClick={() => handleStep1('reliability')}                            className="p-5 bg-white/80 backdrop-blur-xl border border-purple-200 rounded-2xl active:bg-purple-50 active:border-purple-400 transition-all shadow-sm font-bold text-purple-900 text-base sm:text-lg text-left flex items-center w-full"                            >                            <span className="text-2xl mr-4 shrink-0">🛡️</span>                            Уют, Надежность и Свобода                            </button>                            <button                             onClick={() => handleStep1('adventure')}                            className="p-5 bg-white/80 backdrop-blur-xl border border-purple-200 rounded-2xl active:bg-purple-50 active:border-purple-400 transition-all shadow-sm font-bold text-purple-900 text-base sm:text-lg text-left flex items-center w-full"                            >                            <span className="text-2xl mr-4 shrink-0">🔥</span>                            Стиль, Драйв и Эмоции                            </button>                        </div>                        </div>                    )}                    {/* Step 2: Vibe Check */}                    {quizStep === 'step2' && (                        <div className="text-center space-y-6 w-full animate-fade-in">                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Вопрос 2 из 2 🌍</h2>                        <p className="text-gray-600 text-base sm:text-lg px-4">                            Куда бы ты отправилась в первую очередь?                        </p>                                                <div className="grid gap-3 w-full">                            <button                             onClick={handleStep2}                            className="p-5 bg-white/80 backdrop-blur-xl border border-pink-200 rounded-2xl active:bg-pink-50 active:border-pink-400 transition-all shadow-sm font-bold text-pink-900 text-base sm:text-lg text-left flex items-center w-full"                            >                            <span className="text-2xl mr-4 shrink-0">🌄</span>                            В красивое путешествие с комфортом                            </button>                            <button                             onClick={handleStep2}                            className="p-5 bg-white/80 backdrop-blur-xl border border-pink-200 rounded-2xl active:bg-pink-50 active:border-pink-400 transition-all shadow-sm font-bold text-pink-900 text-base sm:text-lg text-left flex items-center w-full"                            >                            <span className="text-2xl mr-4 shrink-0">🛍️</span>                            На шоппинг, чтобы все поместилось                            </button>                            <button                             onClick={handleStep2}                            className="p-5 bg-white/80 backdrop-blur-xl border border-pink-200 rounded-2xl active:bg-pink-50 active:border-pink-400 transition-all shadow-sm font-bold text-pink-900 text-base sm:text-lg text-left flex items-center w-full"                            >                            <span className="text-2xl mr-4 shrink-0">🧭</span>                            Туда, где нет дорог, но красиво                            </button>                        </div>                        </div>                    )}                    {/* Modal: Joke Check */}                    {quizStep === 'modal' && (                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">                        <div className="bg-white rounded-[2rem] p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl animate-bounce-in border-4 border-yellow-300">                            <Shield className="w-16 h-16 mx-auto text-yellow-400 mb-4" />                            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Проверка на крутость! 😎</h3>                            <p className="text-gray-600 mb-8 text-base sm:text-lg leading-relaxed">                            Внимание! Выбранный автомобиль требует навыков парковки 80-го уровня.                            <br/><br/>                            <strong>Обещаешь не занимать два парковочных места сразу?</strong>                            </p>                            <button                             onClick={handleModalAction}                            className="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-xl shadow-lg active:scale-95 transition text-lg"                            >                            Обещаю (скрестив пальцы) 🤞                            </button>                        </div>                        </div>                    )}                    {/* Loading Compliment */}                    {quizStep === 'compliment' && (                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/95 backdrop-blur-xl p-6">                        <h2 className="text-4xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 animate-pulse text-center leading-tight">                            Ты просто космос! 🚀                            <br/><span className="text-xl sm:text-2xl text-gray-500 block mt-6 font-medium">Подбираем идеальный вариант...</span>                        </h2>                        </div>                    )}                    {/* Result Card */}                    {quizStep === 'result' && selectedCar && (                        <div className="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-purple-100 animate-fade-in-up mb-10">                        <div className="relative h-64 sm:h-80">                            <img                             src={selectedCar.img}                             alt={selectedCar.name}                             className="w-full h-full object-cover object-center"                            />                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-6">                            <h2 className="text-2xl sm:text-3xl font-bold text-white shadow-sm">{selectedCar.name}</h2>                            </div>                        </div>                                                <div className="p-6 sm:p-8">                            <div className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-bold mb-4">                            {selectedCar.title}                            </div>                            <p className="text-gray-600 leading-relaxed mb-8 text-base">                            {selectedCar.desc}                            </p>                                                        <button                             onClick={goToGift}                            className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition flex items-center justify-center text-lg"                            >                            Сделать первый шаг к автомобилю мечты <ArrowRight className="ml-2 w-5 h-5" />                            </button>                        </div>                        </div>                    )}                    {/* Final Gift Screen */}                    {quizStep === 'final_gift' && (                        <div className="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 text-center animate-bounce-in border-4 border-green-200 relative overflow-hidden">                        {/* Decor */}                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-green-100 rounded-full opacity-50"></div>                        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-green-100 rounded-full opacity-50"></div>                        <Banknote className="w-20 h-20 sm:w-24 sm:h-24 mx-auto text-green-500 mb-6 animate-pulse" />                                                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Поздравляю!</h2>                        <p className="text-gray-500 mb-8 text-base sm:text-lg">На машину мечты!</p>                                                <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-3xl shadow-inner mb-8 transform rotate-1 hover:rotate-0 transition-transform select-none">                            <div className="flex justify-between items-start mb-4 opacity-80">                            <span className="text-xs font-mono tracking-widest">CERTIFICATE</span>                            <Wallet className="w-6 h-6" />                            </div>                            <div className="text-5xl font-bold tracking-tighter mb-2">1000 ₴</div>                            <div className="text-xs opacity-90 text-right font-mono tracking-widest">HAPPY BIRTHDAY</div>                        </div>                        {!giftClaimed ? (                            <button                             onClick={handleClaimGift}                            className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition mb-6 flex items-center justify-center text-lg"                            >                            Получить                            </button>                        ) : (                            <div className="w-full py-4 bg-green-100 text-green-700 font-bold rounded-2xl mb-6 flex items-center justify-center animate-fade-in text-lg border border-green-200">                            <CreditCard className="w-6 h-6 mr-2" />                            Сейчас будет зачислено на карту                             <div className="ml-2 loader-dots flex space-x-1">                                <span className="block w-1.5 h-1.5 bg-green-600 rounded-full"></span>                                <span className="block w-1.5 h-1.5 bg-green-600 rounded-full"></span>                                <span className="block w-1.5 h-1.5 bg-green-600 rounded-full"></span>                            </div>                            </div>                        )}                        <button                             onClick={resetQuiz}                            className="text-gray-400 hover:text-gray-600 underline text-sm p-4"                        >                            Вернуться в начало                        </button>                        </div>                    )}                    </div>                )}                </div>            );        };        const root = ReactDOM.createRoot(document.getElementById('root'));        root.render(<BirthdayApp />);    </script></body></html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>С Днем Рождения, Ирочка!</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Custom Animations */
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .animate-fall {
+            animation-name: fall;
+            animation-timing-function: linear;
+        }
+        .animate-bounce-slow {
+            animation: bounce 3s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-5%); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+            50% { transform: translateY(0); animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        .animate-bounce-in {
+            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        /* Loader Animation */
+        .loader-dots span {
+            animation-name: loader-dots;
+            animation-duration: 1.4s;
+            animation-iteration-count: infinite;
+            animation-fill-mode: both;
+        }
+        .loader-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .loader-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes loader-dots {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- ICONS COMPONENTS (SVG) ---
+        const Icon = ({ children, className, ...props }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+                {...props}
+            >
+                {children}
+            </svg>
+        );
+
+        const Heart = (p) => <Icon {...p}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></Icon>;
+        const Gift = (p) => <Icon {...p}><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.9 4.9 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></Icon>;
+        const Volume2 = (p) => <Icon {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></Icon>;
+        const VolumeX = (p) => <Icon {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></Icon>;
+        const Camera = (p) => <Icon {...p}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></Icon>;
+        const Sparkles = (p) => <Icon {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 5H5"/><path d="M19 21v-4"/><path d="M15 19h4"/></Icon>;
+        const Music = (p) => <Icon {...p}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></Icon>;
+        const Shield = (p) => <Icon {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></Icon>;
+        const ArrowRight = (p) => <Icon {...p}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></Icon>;
+        const Banknote = (p) => <Icon {...p}><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></Icon>;
+        const Wallet = (p) => <Icon {...p}><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></Icon>;
+        const CheckCircle = (p) => <Icon {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Icon>;
+        const CreditCard = (p) => <Icon {...p}><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></Icon>;
+
+        // --- MAIN APP COMPONENT ---
+        const BirthdayApp = () => {
+            const [view, setView] = useState('greeting'); // 'greeting' or 'quiz'
+            const [isExploding, setIsExploding] = useState(false);
+            const [musicPlaying, setMusicPlaying] = useState(false);
+            const [confetti, setConfetti] = useState([]);
+
+            // Scroll to top when view changes
+            useEffect(() => {
+                window.scrollTo(0, 0);
+            }, [view]);
+
+            // Quiz States
+            const [quizStep, setQuizStep] = useState('step1'); 
+            const [selectedCategory, setSelectedCategory] = useState(null); 
+            const [selectedCar, setSelectedCar] = useState(null);
+            const [giftClaimed, setGiftClaimed] = useState(false); 
+
+            // Confetti Logic
+            const handleExplosion = () => {
+                setIsExploding(true);
+                const colors = ['#FFC0CB', '#FF69B4', '#FFD700', '#87CEEB', '#9370DB'];
+                const newConfetti = Array.from({ length: 70 }).map((_, i) => ({
+                    id: i,
+                    x: Math.random() * 100,
+                    y: -10,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    delay: Math.random() * 2,
+                    rotation: Math.random() * 360,
+                    scale: Math.random() * 0.5 + 0.5
+                }));
+                setConfetti(newConfetti);
+                setTimeout(() => {
+                    setIsExploding(false);
+                    setConfetti([]);
+                }, 4000);
+            };
+
+            const memories = [
+                {
+                    title: "Красота и стиль",
+                    desc: "Ты красивая, стройная, спортивная! У тебя отличный вкус. Если на тебя смотрят — значит ты нравишься)",
+                    icon: <Camera className="w-6 h-6 md:w-8 md:h-8 text-pink-500" />,
+                    color: "bg-pink-100"
+                },
+                {
+                    title: "Профессионализм",
+                    desc: "Ты талантливая, ответственная, честная! Николаю повезло с таким личным ассистентом!",
+                    icon: <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-purple-500" />,
+                    color: "bg-purple-100"
+                },
+                {
+                    title: "Разносторонние таланты",
+                    desc: "Ты вкусно готовишь, хорошо водишь машину и весело поешь) Пусть счастья и радости будет больше!",
+                    icon: <Music className="w-6 h-6 md:w-8 md:h-8 text-yellow-500" />,
+                    color: "bg-yellow-100"
+                }
+            ];
+
+            // Car Data with LOCAL IMAGES
+            const cars = {
+                power: {
+                    name: "Dodge Ram 1500",
+                    title: "Мощь и Харизма",
+                    desc: "Американская мечта во плоти. Этот зверь создан для тех, кто не боится заявлять о себе. Мощный, огромный и невероятно комфортный — он идеально подчеркивает твою уверенность и статус.",
+                    img: "Dodge.jpg" 
+                },
+                reliability: {
+                    name: "Toyota Tundra",
+                    title: "Несокрушимая Сила",
+                    desc: "Легендарная надежность в сочетании с дикой мощью. Этот пикап — настоящая крепость на колесах. Идеальный выбор для тебя: стильный, проходимый и готовый к любым жизненным вызовам.",
+                    img: "toyota.jpg"
+                },
+                adventure: {
+                    name: "Ford Ranger Raptor",
+                    title: "Стильный Хищник",
+                    desc: "Дерзкий, спортивный и готовый ко всему. Он сочетает в себе городскую элегантность и дикий нрав. Как и ты, он умеет быть разным, но всегда остается лучшим в своем деле.",
+                    img: "ford.jpg"
+                }
+            };
+
+            // Quiz Handlers
+            const handleStep1 = (category) => {
+                setSelectedCategory(category);
+                setQuizStep('step2');
+            };
+
+            const handleStep2 = () => {
+                setSelectedCar(cars[selectedCategory]);
+                setQuizStep('modal');
+            };
+
+            const handleModalAction = () => {
+                setQuizStep('compliment');
+                setTimeout(() => {
+                    setQuizStep('result');
+                    handleExplosion(); 
+                }, 2500);
+            };
+
+            const goToGift = () => {
+                setQuizStep('final_gift');
+                handleExplosion();
+            };
+
+            const handleClaimGift = () => {
+                handleExplosion();
+                setGiftClaimed(true);
+            };
+
+            const resetQuiz = () => {
+                setQuizStep('step1');
+                setSelectedCar(null);
+                setSelectedCategory(null);
+                setGiftClaimed(false);
+                setView('greeting');
+            };
+
+            // New handler to start/restart quiz from greeting page
+            const startQuiz = () => {
+                setQuizStep('step1');
+                setSelectedCategory(null);
+                setSelectedCar(null);
+                setGiftClaimed(false);
+                setView('quiz');
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 font-sans overflow-x-hidden selection:bg-pink-200 pb-10">
+                
+                {/* Confetti Overlay */}
+                {isExploding && (
+                    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+                    {confetti.map((piece) => (
+                        <div
+                        key={piece.id}
+                        className="absolute w-3 h-3 rounded-sm animate-fall"
+                        style={{
+                            left: `${piece.x}%`,
+                            backgroundColor: piece.color,
+                            animationDuration: '3s',
+                            animationDelay: `${piece.delay}s`,
+                            transform: `rotate(${piece.rotation}deg) scale(${piece.scale})`
+                        }}
+                        />
+                    ))}
+                    </div>
+                )}
+
+                {/* Navigation */}
+                <nav className="fixed w-full top-0 z-40 bg-white/30 backdrop-blur-xl border-b border-white/20 supports-[backdrop-filter]:bg-white/30">
+                    <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
+                    <span 
+                        className="font-bold text-xl text-purple-800 tracking-tight cursor-pointer active:scale-95 transition-transform"
+                        onClick={() => setView('greeting')}
+                    >
+                        {view === 'greeting' ? 'HBD ✨' : '⬅ Назад'}
+                    </span>
+                    <button 
+                        onClick={() => setMusicPlaying(!musicPlaying)}
+                        className="p-2 rounded-full bg-white/50 hover:bg-white active:scale-90 transition-all shadow-sm"
+                    >
+                        {musicPlaying ? <Volume2 className="w-6 h-6 text-purple-600" /> : <VolumeX className="w-6 h-6 text-gray-400" />}
+                    </button>
+                    </div>
+                </nav>
+
+                {/* MAIN GREETING VIEW */}
+                {view === 'greeting' && (
+                    <div className="animate-fade-in px-4 md:px-0">
+                    {/* Hero Section */}
+                    <header className="relative pt-32 pb-16 text-center max-w-4xl mx-auto">
+                        <div className="inline-block mb-4 px-4 py-1.5 rounded-full bg-white/60 backdrop-blur-sm text-purple-700 text-sm font-medium shadow-sm animate-bounce-slow">
+                        🎉 Сегодня твой день!
+                        </div>
+                        
+                        <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-6 tracking-tight leading-[1.1]">
+                        С Днем Рождения, <br/>
+                        <span className="block text-gray-800 mt-2">Ирочка!</span> 
+                        </h1>
+
+                        <div className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed space-y-4 px-2">
+                        <p className="font-semibold text-purple-700 text-lg">Ирисимос, привет)</p>
+                        <p>Еще раз с Днем рождения! Искренне желаю тебе счастья!</p>
+                        <p>
+                            Желаю чтобы следующий год твоей жизни был наполнен:
+                            радостью, легкостью, увереностью, самореализацией, деньгами, нужными людьми и поддерживающим окружением, интересными проектами, крутыми достижениями и новой машиной )
+                        </p>
+                        <p className="font-medium text-gray-700">Ты большая молодец!</p>
+                        <p>
+                            Не смотря на наши обстоятельства — я тобой горжусь и верю в тебя!
+                            Верю, что у тебя все будет наилучшим образом и искренне тебе этого желаю!
+                        </p>
+                        <p>Верю, что Мир заметит твои таланты и оценит их по достоинству!</p>
+                        <p className="font-bold text-gray-800 pt-2 text-xl">
+                            С Днем рождения тебя! Будь счастлива!
+                        </p>
+                        </div>
+
+                        <button 
+                        onClick={handleExplosion}
+                        className="group relative inline-flex items-center justify-center w-full sm:w-auto px-10 py-4 font-bold text-white transition-all duration-200 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl shadow-lg active:scale-95 focus:outline-none ring-offset-2 focus:ring-2 ring-purple-400"
+                        >
+                        <Sparkles className="w-6 h-6 mr-2 animate-pulse" />
+                        <span className="text-lg">Нажать</span>
+                        </button>
+                    </header>
+
+                    {/* Photo / Cards Section */}
+                    <section className="max-w-4xl mx-auto py-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="relative group overflow-hidden rounded-3xl bg-white shadow-xl h-80 md:h-96 transform transition-all active:scale-[0.98]">
+                            <div className="absolute inset-0 bg-gray-200 animate-pulse group-hover:animate-none flex items-center justify-center text-gray-400">
+                            {/* VIDEO REPLACEMENT */}
+                            <video 
+                                src="videohb.mp4" 
+                                autoPlay 
+                                loop 
+                                muted 
+                                playsInline 
+                                className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700"
+                            ></video>
+                            </div>
+                        </div>
+
+                        <div className="md:col-span-2 rounded-3xl bg-white/70 backdrop-blur-xl border border-white/50 p-6 md:p-8 shadow-xl flex flex-col justify-center relative overflow-hidden">
+                            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-purple-200 rounded-full blur-3xl opacity-50"></div>
+                            <div className="absolute bottom-0 left-0 -mb-4 -ml-4 w-32 h-32 bg-pink-200 rounded-full blur-3xl opacity-50"></div>
+                            
+                            <h3 className="text-2xl font-bold text-gray-800 mb-6 relative z-10">Почему ты особенная?</h3>
+                            
+                            <div className="space-y-4 relative z-10">
+                            {memories.map((item, index) => (
+                                <div 
+                                key={index}
+                                className="flex items-start p-3 rounded-xl hover:bg-white/50 transition-colors cursor-default group"
+                                >
+                                <div className={`p-3 rounded-xl ${item.color} mr-4 flex-shrink-0`}>
+                                    {item.icon}
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-gray-800 text-base mb-1">{item.title}</h4>
+                                    <p className="text-sm text-gray-600 leading-snug">{item.desc}</p>
+                                </div>
+                                </div>
+                            ))}
+                            </div>
+                        </div>
+                        </div>
+                    </section>
+
+                    {/* Wishes Grid */}
+                    <section className="max-w-4xl mx-auto py-8">
+                        <h2 className="text-center text-2xl md:text-3xl font-bold text-gray-800 mb-8">Пусть год будет наполнен:</h2>
+                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                        {[
+                            { text: "Радостью", emoji: "✨", bg: "bg-yellow-50" },
+                            { text: "Деньгами", emoji: "💰", bg: "bg-green-50" },
+                            { text: "Новой машиной", emoji: "🚘", bg: "bg-red-50" },
+                            { text: "Крутыми проектами", emoji: "🚀", bg: "bg-indigo-50" },
+                            { text: "Легкостью", emoji: "🕊️", bg: "bg-blue-50" },
+                            { text: "Уверенностью", emoji: "🦁", bg: "bg-orange-50" },
+                            { text: "Самореализацией", emoji: "🌟", bg: "bg-purple-50" },
+                            { text: "Любовью", emoji: "❤️", bg: "bg-pink-50" }
+                        ].map((wish, idx) => (
+                            <div key={idx} className={`${wish.bg} rounded-2xl p-5 text-center active:scale-95 transition-transform cursor-pointer border border-white/50 shadow-sm`}>
+                            <div className="text-3xl sm:text-4xl mb-2">{wish.emoji}</div>
+                            <div className="font-semibold text-gray-700 text-sm sm:text-base">{wish.text}</div>
+                            </div>
+                        ))}
+                        </div>
+                    </section>
+
+                    {/* Gift Section */}
+                    <section className="py-16 text-center">
+                        <div className="max-w-md mx-auto bg-white rounded-[2rem] shadow-2xl p-8 relative overflow-hidden border-4 border-purple-100">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-400 via-pink-500 to-purple-400"></div>
+                        
+                        <Gift className="w-16 h-16 mx-auto text-purple-500 mb-4 animate-bounce" />
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">Виртуальный подарок</h3>
+                        <p className="text-gray-500 mb-8 leading-relaxed">Узнай, какой автомобиль идеально подходит твоему характеру!</p>
+                        
+                        <button 
+                            onClick={startQuiz}
+                            className="w-full py-4 px-6 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-lg flex items-center justify-center text-lg"
+                        >
+                            Получить 🎁
+                        </button>
+                        </div>
+                    </section>
+                    
+                    {/* Footer */}
+                    <footer className="text-center py-8 text-gray-400 text-xs sm:text-sm pb-12">
+                        <p>Сделано с любовью специально для тебя ❤️</p>
+                    </footer>
+                    </div>
+                )}
+
+                {/* QUIZ VIEW */}
+                {view === 'quiz' && (
+                    <div className="pt-28 pb-12 px-4 min-h-screen flex flex-col items-center justify-start sm:justify-center max-w-2xl mx-auto animate-fade-in">
+                    
+                    {/* Step 1: Intro / Category Selection */}
+                    {quizStep === 'step1' && (
+                        <div className="text-center space-y-6 w-full">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Вопрос 1 из 2 🧐</h2>
+                        <p className="text-gray-600 text-base sm:text-lg px-4">
+                            Что для тебя важнее всего в автомобиле?
+                        </p>
+                        
+                        <div className="grid gap-3 w-full">
+                            <button 
+                            onClick={() => handleStep1('power')}
+                            className="p-5 bg-white/80 backdrop-blur-xl border border-purple-200 rounded-2xl active:bg-purple-50 active:border-purple-400 transition-all shadow-sm font-bold text-purple-900 text-base sm:text-lg text-left flex items-center w-full"
+                            >
+                            <span className="text-2xl mr-4 shrink-0">💪</span>
+                            Характер, Мощь и Харизма
+                            </button>
+                            <button 
+                            onClick={() => handleStep1('reliability')}
+                            className="p-5 bg-white/80 backdrop-blur-xl border border-purple-200 rounded-2xl active:bg-purple-50 active:border-purple-400 transition-all shadow-sm font-bold text-purple-900 text-base sm:text-lg text-left flex items-center w-full"
+                            >
+                            <span className="text-2xl mr-4 shrink-0">🛡️</span>
+                            Уют, Надежность и Свобода
+                            </button>
+                            <button 
+                            onClick={() => handleStep1('adventure')}
+                            className="p-5 bg-white/80 backdrop-blur-xl border border-purple-200 rounded-2xl active:bg-purple-50 active:border-purple-400 transition-all shadow-sm font-bold text-purple-900 text-base sm:text-lg text-left flex items-center w-full"
+                            >
+                            <span className="text-2xl mr-4 shrink-0">🔥</span>
+                            Стиль, Драйв и Эмоции
+                            </button>
+                        </div>
+                        </div>
+                    )}
+
+                    {/* Step 2: Vibe Check */}
+                    {quizStep === 'step2' && (
+                        <div className="text-center space-y-6 w-full animate-fade-in">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Вопрос 2 из 2 🌍</h2>
+                        <p className="text-gray-600 text-base sm:text-lg px-4">
+                            Куда бы ты отправилась в первую очередь?
+                        </p>
+                        
+                        <div className="grid gap-3 w-full">
+                            <button 
+                            onClick={handleStep2}
+                            className="p-5 bg-white/80 backdrop-blur-xl border border-pink-200 rounded-2xl active:bg-pink-50 active:border-pink-400 transition-all shadow-sm font-bold text-pink-900 text-base sm:text-lg text-left flex items-center w-full"
+                            >
+                            <span className="text-2xl mr-4 shrink-0">🌄</span>
+                            В красивое путешествие с комфортом
+                            </button>
+                            <button 
+                            onClick={handleStep2}
+                            className="p-5 bg-white/80 backdrop-blur-xl border border-pink-200 rounded-2xl active:bg-pink-50 active:border-pink-400 transition-all shadow-sm font-bold text-pink-900 text-base sm:text-lg text-left flex items-center w-full"
+                            >
+                            <span className="text-2xl mr-4 shrink-0">🛍️</span>
+                            На шоппинг, чтобы все поместилось
+                            </button>
+                            <button 
+                            onClick={handleStep2}
+                            className="p-5 bg-white/80 backdrop-blur-xl border border-pink-200 rounded-2xl active:bg-pink-50 active:border-pink-400 transition-all shadow-sm font-bold text-pink-900 text-base sm:text-lg text-left flex items-center w-full"
+                            >
+                            <span className="text-2xl mr-4 shrink-0">🧭</span>
+                            Туда, где нет дорог, но красиво
+                            </button>
+                        </div>
+                        </div>
+                    )}
+
+                    {/* Modal: Joke Check */}
+                    {quizStep === 'modal' && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+                        <div className="bg-white rounded-[2rem] p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl animate-bounce-in border-4 border-yellow-300">
+                            <Shield className="w-16 h-16 mx-auto text-yellow-400 mb-4" />
+                            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Проверка на крутость! 😎</h3>
+                            <p className="text-gray-600 mb-8 text-base sm:text-lg leading-relaxed">
+                            Внимание! Выбранный автомобиль требует навыков парковки 80-го уровня.
+                            <br/><br/>
+                            <strong>Обещаешь не занимать два парковочных места сразу?</strong>
+                            </p>
+                            <button 
+                            onClick={handleModalAction}
+                            className="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-xl shadow-lg active:scale-95 transition text-lg"
+                            >
+                            Обещаю (скрестив пальцы) 🤞
+                            </button>
+                        </div>
+                        </div>
+                    )}
+
+                    {/* Loading Compliment */}
+                    {quizStep === 'compliment' && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/95 backdrop-blur-xl p-6">
+                        <h2 className="text-4xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 animate-pulse text-center leading-tight">
+                            Ты просто космос! 🚀
+                            <br/><span className="text-xl sm:text-2xl text-gray-500 block mt-6 font-medium">Подбираем идеальный вариант...</span>
+                        </h2>
+                        </div>
+                    )}
+
+                    {/* Result Card */}
+                    {quizStep === 'result' && selectedCar && (
+                        <div className="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-purple-100 animate-fade-in-up mb-10">
+                        <div className="relative h-64 sm:h-80">
+                            <img 
+                            src={selectedCar.img} 
+                            alt={selectedCar.name} 
+                            className="w-full h-full object-cover object-center"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-6">
+                            <h2 className="text-2xl sm:text-3xl font-bold text-white shadow-sm">{selectedCar.name}</h2>
+                            </div>
+                        </div>
+                        
+                        <div className="p-6 sm:p-8">
+                            <div className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-bold mb-4">
+                            {selectedCar.title}
+                            </div>
+                            <p className="text-gray-600 leading-relaxed mb-8 text-base">
+                            {selectedCar.desc}
+                            </p>
+                            
+                            <button 
+                            onClick={goToGift}
+                            className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition flex items-center justify-center text-lg"
+                            >
+                            Сделать первый шаг к автомобилю мечты <ArrowRight className="ml-2 w-5 h-5" />
+                            </button>
+                        </div>
+                        </div>
+                    )}
+
+                    {/* Final Gift Screen */}
+                    {quizStep === 'final_gift' && (
+                        <div className="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl p-6 sm:p-8 text-center animate-bounce-in border-4 border-green-200 relative overflow-hidden">
+                        {/* Decor */}
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-green-100 rounded-full opacity-50"></div>
+                        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-green-100 rounded-full opacity-50"></div>
+
+                        <Banknote className="w-20 h-20 sm:w-24 sm:h-24 mx-auto text-green-500 mb-6 animate-pulse" />
+                        
+                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Поздравляю!</h2>
+                        <p className="text-gray-500 mb-8 text-base sm:text-lg">На машину мечты!</p>
+                        
+                        <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-3xl shadow-inner mb-8 transform rotate-1 hover:rotate-0 transition-transform select-none">
+                            <div className="flex justify-between items-start mb-4 opacity-80">
+                            <span className="text-xs font-mono tracking-widest">CERTIFICATE</span>
+                            <Wallet className="w-6 h-6" />
+                            </div>
+                            <div className="text-5xl font-bold tracking-tighter mb-2">1000 ₴</div>
+                            <div className="text-xs opacity-90 text-right font-mono tracking-widest">HAPPY BIRTHDAY</div>
+                        </div>
+
+                        {!giftClaimed ? (
+                            <button 
+                            onClick={handleClaimGift}
+                            className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition mb-6 flex items-center justify-center text-lg"
+                            >
+                            Получить
+                            </button>
+                        ) : (
+                            <div className="w-full py-4 bg-green-100 text-green-700 font-bold rounded-2xl mb-6 flex items-center justify-center animate-fade-in text-lg border border-green-200">
+                            <CreditCard className="w-6 h-6 mr-2" />
+                            Сейчас будет зачислено на карту
+                             <div className="ml-2 loader-dots flex space-x-1">
+                                <span className="block w-1.5 h-1.5 bg-green-600 rounded-full"></span>
+                                <span className="block w-1.5 h-1.5 bg-green-600 rounded-full"></span>
+                                <span className="block w-1.5 h-1.5 bg-green-600 rounded-full"></span>
+                            </div>
+                            </div>
+                        )}
+
+                        <button 
+                            onClick={resetQuiz}
+                            className="text-gray-400 hover:text-gray-600 underline text-sm p-4"
+                        >
+                            Вернуться в начало
+                        </button>
+                        </div>
+                    )}
+
+                    </div>
+                )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<BirthdayApp />);
+    </script>
+</body>
+</html>
